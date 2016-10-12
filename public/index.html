@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="js/jquery-3.1.1.js"></script>
+    <title>Mongo + jQuery Todo List</title>
+</head>
+
+<body>
+    <div>
+      <h1>Mongo + jQuery Todo List</h1>
+    </div>
+    <div>
+      <input type="text" class="new-item-text">
+      <button id="new-item-button">Add Todo Item</button>
+    </div>
+
+    <script type="text/javascript">
+        var myBody = $('body');
+        var loadItems = $('#load-items');
+
+        var todoList = $('<ul>', {
+            id: 'todo-list'
+        });
+
+        myBody.append(todoList);
+
+        ////////////////////////////// POST A NEW ITEM /////////////////
+        $('#new-item-button').on('click', function(evt) {
+          evt.preventDefault()
+          // get the text from form field:
+          var todoText = $('.new-item-text').val()
+
+          // options for AJAX POST request:
+          var opts = {
+            method: 'POST',
+            url: '/items',
+            contentType: 'application/json',
+            data: JSON.stringify({title: todoText, emoji: '😈'})
+          }
+
+          // what happens when the server responds:
+          var cb = function(dataThatCameBack) {
+            // console.log(dataThatCameBack.savedTodo.title)
+            appendTodo(dataThatCameBack)
+          }
+
+          // send the request:
+          $.ajax(opts).done(cb)
+        })
+
+        ///////////// DELETE BUTTONS: //////////////////
+
+        $('body').on('click', '.btn-delete', function() {
+          // id of Item we want to delete:
+          var itemId = $(this).parent().attr('id')
+          var opts = {
+            method: 'DELETE',
+            url: '/items/' + itemId
+          }
+          var cb = function(dataThatCameBack) {
+            // console.log(dataThatCameBack)
+            // $('#' + itemId).slideUp(function() {
+            //   $(this).remove()
+            // })
+            getTodos()
+
+          }
+
+          $.ajax(opts).done(cb)
+
+        })
+
+        //////////////////////////
+
+        // ON PAGE LOAD, LOAD ALL ITEMS:
+        getTodos()
+
+        // Deals with appending new todo items:
+        function appendTodo(todo) {
+          var newItem = $('<li>', {
+              id: todo['_id'],
+              class: 'todo-item',
+              text: todo['title']
+          });
+          newItem.append('<button class="btn-delete">Delete</button>')
+          todoList.append(newItem);
+        }
+
+        // HANDLING THE AJAX GET request for Items on the server. Then populate the front-end:
+        function getTodos() {
+          var opts = {
+              method: 'get',
+              url: '/items'
+          };
+          var cb = function(dataThatCameBack) {
+              console.log(dataThatCameBack)
+              todoList.empty()
+              dataThatCameBack.forEach(function(el) {
+                  appendTodo(el)
+              });
+            }
+              $.ajax(opts)
+                  .done(cb);
+        }
+    </script>
+</body>
+
+</html>
