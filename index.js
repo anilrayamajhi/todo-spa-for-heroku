@@ -7,6 +7,7 @@ const PORT = 3000;
 var app = express();
 
 mongoose.connect(process.env.MONGO_URL, function(err) {
+	console.log(process.env.MONGO_URL);//check connetion with mLab in nodemon
 	if (err) console.log(err);
 	else console.log('Succesfully connected to my-first-spa database');
 });
